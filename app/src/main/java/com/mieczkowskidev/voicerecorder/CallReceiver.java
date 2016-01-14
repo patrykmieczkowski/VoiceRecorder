@@ -28,6 +28,7 @@ public class CallReceiver extends BroadcastReceiver {
     String phoneNumber;
     byte[] incrept;
     byte[] decrpt;
+    int x = 0;
     String selected_song_name;
 
     public CallReceiver() {
@@ -54,19 +55,32 @@ public class CallReceiver extends BroadcastReceiver {
 
     }
 
+
+//    public void onDestroy() {
+//        telephony.listen(null, PhoneStateListener.LISTEN_NONE);
+//    }
+
+
     private class MyPhoneStateListener extends PhoneStateListener {
 
         public void onCallStateChanged(int state, String incomingNumber) {
 
-            Log.d("MyPhoneListener",state+"   incoming no:"+incomingNumber);
+            Log.d("MyPhoneListener", state + "   incoming no:" + incomingNumber);
 
-            if (state == 1) {
-
-                String msg = "New Phone Call Event. Incomming Number : "+incomingNumber;
-                int duration = Toast.LENGTH_LONG;
-                Toast toast = Toast.makeText(ctx, msg, duration);
-                toast.show();
-
+            switch (state) {
+                case TelephonyManager.CALL_STATE_RINGING:
+                    Log.d(TAG, "onCallStateChanged: CALL_STATE_RINGING " + x++);
+//                    String msg = "New Phone Call Event. Incoming Number : " + incomingNumber;
+//                    int duration = Toast.LENGTH_LONG;
+//                    Toast toast = Toast.makeText(ctx, msg, duration);
+//                    toast.show();
+                    break;
+                case TelephonyManager.CALL_STATE_OFFHOOK:
+                    Log.d(TAG, "onCallStateChanged: CALL_STATE_OFFHOOK " + x++);
+                    break;
+                case TelephonyManager.CALL_STATE_IDLE:
+                    Log.d(TAG, "onCallStateChanged: CALL_STATE_IDLE " + x++);
+                    break;
             }
         }
     }
