@@ -7,9 +7,7 @@ import android.media.MediaRecorder;
 import android.os.Environment;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
-import android.text.format.Time;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,19 +18,9 @@ import java.util.Locale;
 public class CallReceiver extends BroadcastReceiver {
 
     public static final String TAG = CallReceiver.class.getSimpleName();
-
-    TelephonyManager telManager;
+    static MyPhoneStateListener phoneListener;
     Context ctx;
-    boolean recordStarted;
-    static boolean status = false;
-    String phoneNumber;
-    byte[] incrept;
-    byte[] decrpt;
     int x = 0;
-    String selected_song_name;
-
-    public CallReceiver() {
-    }
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -45,10 +33,11 @@ public class CallReceiver extends BroadcastReceiver {
             TelephonyManager tmgr = (TelephonyManager) context
                     .getSystemService(Context.TELEPHONY_SERVICE);
 
-            MyPhoneStateListener PhoneListener = new MyPhoneStateListener();
+            if (phoneListener == null) {
+                phoneListener = new MyPhoneStateListener();
 
-            tmgr.listen(PhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
-
+                tmgr.listen(phoneListener, PhoneStateListener.LISTEN_CALL_STATE);
+            }
         } catch (Exception e) {
             Log.e(TAG, "Phone Receive Error" + e);
         }
@@ -65,6 +54,7 @@ public class CallReceiver extends BroadcastReceiver {
 
         MediaRecorder recorder;
         boolean recordStatus = false;
+        boolean isRecordingStarted = false;
 
         public void onCallStateChanged(int state, String incomingNumber) {
 
@@ -77,13 +67,15 @@ public class CallReceiver extends BroadcastReceiver {
 //                    int duration = Toast.LENGTH_LONG;
 //                    Toast toast = Toast.makeText(ctx, msg, duration);
 //                    toast.show();
-
                     break;
                 case TelephonyManager.CALL_STATE_OFFHOOK:
                     Log.d(TAG, "onCallStateChanged: CALL_STATE_OFFHOOK " + x++);
                     Log.d(TAG, "starting recording");
                     recordStatus = true;
-                    prepareMediaRecorder();
+                    if (!isRecordingStarted) {
+                        isRecordingStarted = true;
+                        prepareMediaRecorder();
+                    }
                     break;
                 case TelephonyManager.CALL_STATE_IDLE:
                     Log.d(TAG, "onCallStateChanged: CALL_STATE_IDLE " + x++);
@@ -91,8 +83,13 @@ public class CallReceiver extends BroadcastReceiver {
                         recordStatus = false;
                         if (recorder != null) {
                             Log.d(TAG, "stoping recording");
-                            recorder.stop();
+                            try {
+                                recorder.stop();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
+
                     }
                     break;
             }
@@ -134,6 +131,7 @@ public class CallReceiver extends BroadcastReceiver {
             try {
                 recorder.prepare();
                 recorder.start();
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
