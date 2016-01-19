@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Log.d(TAG, "onCreate()");
+
         start = (Button) findViewById(R.id.button_start);
         stop = (Button) findViewById(R.id.button_stop);
 
